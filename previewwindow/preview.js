@@ -31,7 +31,7 @@ Common.PreviewWindow = async function (hwnd, bFocus) {
 		} else {
 			path = await Item.Path;
 		}
-		if (!await IsCloud(Item)) {
+		if (await MainWindow.Sync.PreviewWindow.PreviewCloudFiles || !await IsCloud(Item)) {
 			if (await PathMatchEx(path, await MainWindow.Sync.PreviewWindow.TextFilter)) {
 				if (await Item.ExtendedProperty("Size") <= await MainWindow.Sync.PreviewWindow.TextLimit) {
 					const ado = await OpenAdodbFromTextFile(path, await MainWindow.Sync.PreviewWindow.Charset);
@@ -54,9 +54,14 @@ Common.PreviewWindow = async function (hwnd, bFocus) {
 				}
 			}
 			if (await api.PathMatchSpec(path, await MainWindow.Sync.PreviewWindow.Embed)) {
-				ar.unshift('<input type="button" value=" &#x25B6; " title="' + (await GetTextR("@wmploc.dll,-1800")) + '" id="play1"" onclick="Addons.PreviewWindow.Play()">');
-				img1.onclick = Addons.PreviewWindow.Play;
-				img1.style.cursor = "pointer";
+				if (!await MainWindow.Sync.PreviewWindow.Preview) {
+					ar.unshift('<input type="button" value=" &#x25B6; " title="' + (await GetTextR("@wmploc.dll,-1800")) + '" id="play1"" onclick="Addons.PreviewWindow.Play()">');
+					img1.onclick = Addons.PreviewWindow.Play;
+					img1.style.cursor = "pointer";
+					Handled = true;
+				} else {
+					Addons.PreviewWindow.Play();
+				}
 			} else {
 				img1.onclick = null;
 				img1.style.cursor = "";
@@ -208,20 +213,32 @@ Addons.PreviewWindow = {
 		const div1 = document.getElementById("div1");
 		const img1 = document.getElementById("img1");
 		const path = await MainWindow.Sync.PreviewWindow.Item.ExtendedProperty("linktarget") || await MainWindow.Sync.PreviewWindow.Item.Path;
+		const autoplay = await MainWindow.Sync.PreviewWindow.AutoPlay;
+		const muted = await MainWindow.Sync.PreviewWindow.Muted;
+
+		document.title = await MainWindow.Sync.PreviewWindow.Item.Name;
+
+		let option = "";
+
 		if (!window.chrome && await api.PathMatchSpec(path, "*.wav")) {
 			api.PlaySound(path, null, 3);
 		} else {
 			document.getElementById("desc1").innerHTML = "";
 			if (ui_.IEVer >= 11 && await api.PathMatchSpec(path, window.chrome ? "*.mp3;*.m4a;*.wav;*.pcm;*.oga;*.flac;*.fla" : "*.mp3;*.m4a")) {
-				div1.innerHTML = '<audio controls autoplay style="width: 100%"><source src="' + path + '"></audio>';
+				img1.style.display = "none";
+				div1.style.display = "";
+				option += autoplay ? "Autoplay " : "";
+				div1.innerHTML = '<audio controls ' + option + 'style="width: 100%"><source src="' + path + '"></audio>';
 			} else {
 				div1.style.height = g_.IEVer >= 8 ? "calc(100% - 5px)" : "99%";
 				img1.style.display = "none";
 				div1.style.display = "";
-				if (window.chrome || (ui_.IEVer >= 11 && await api.PathMatchSpec(path, "*.mp4"))) {
-					div1.innerHTML = '<video controls autoplay style="width: 100%; max-height: 100%"><source src="' + path + '"></video>';
+				option += autoplay ? "Autoplay " : "";
+				option += muted ? "Muted " : "";
+				if ((window.chrome && await api.PathMatchSpec(path, "*.mp4;*.avi")) || (ui_.IEVer >= 11 && await api.PathMatchSpec(path, "*.mp4"))) {
+					div1.innerHTML = '<video id="Preview" controls ' + option + 'style="background-color: #000; width: 100%; max-height: 100%"><source src="' + path + '"></video></video>';
 				} else {
-					div1.innerHTML = '<embed width="100%" height="100%" src="' + path + '" autoplay="true"></embed>';
+					div1.innerHTML = '<embed id="Preview" width="100%" height="100%" src="' + path + '"></embed>';
 				}
 			}
 			div1.style.display = "";
@@ -270,18 +287,38 @@ WebBrowser.OnClose = async function (WB) {
 AddEventEx(window, "resize", Addons.PreviewWindow.GetRect);
 
 AddEventEx(window, "keydown", function (e) {
-	if (e.keyCode == VK_LEFT || e.keyCode == VK_UP || e.keyCode == VK_BACK) {
-		Addons.PreviewWindow.Move(-1, true);
-		return true;
-	}
-	if (e.keyCode == VK_RIGHT || e.keyCode == VK_DOWN || e.keyCode == VK_RETURN || e.keyCode == VK_SPACE) {
-		Addons.PreviewWindow.Move(1, true);
-		return true;
+	var el = document.getElementById("Preview");
+	console.log(el);
+	if (el) {
+		// Videoタグでは早送りと巻き戻し操作と競合するので左右キーを無効にする
+		if (e.keyCode == VK_UP || e.keyCode == VK_BACK) {
+			Addons.PreviewWindow.Move(-1, true);
+			return true;
+		}
+		if (e.keyCode == VK_DOWN || e.keyCode == VK_RETURN) {
+			Addons.PreviewWindow.Move(1, true);
+			return true;
+		}
+	} else {
+		if (e.keyCode == VK_LEFT || e.keyCode == VK_UP || e.keyCode == VK_BACK) {
+			Addons.PreviewWindow.Move(-1, true);
+			return true;
+		}
+		if (e.keyCode == VK_RIGHT || e.keyCode == VK_DOWN || e.keyCode == VK_RETURN || e.keyCode == VK_SPACE) {
+			Addons.PreviewWindow.Move(1, true);
+			return true;
+		}
 	}
 });
 
 AddEventEx(window, "dblclick", function (ev) {
-	Addons.PreviewWindow.Move(ev.shiftKey ? -1 : 1);
+	var el = document.getElementById("Preview");
+	if (el) {
+		// Videoタグではダブルクリックはウィンドウにフィット操作となる。動画再生が邪魔されないように同期を切る
+		MainWindow.Sync.PreviewWindow.dlg = void 0;
+	} else {
+		Addons.PreviewWindow.Move(ev.shiftKey ? -1 : 1);
+	}
 	return true;
 });
 

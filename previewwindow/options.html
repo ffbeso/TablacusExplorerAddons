@@ -5,7 +5,7 @@
       <td style="width: 100%"><label>@mspaint.exe,-36044[Text]</label></td>
     </tr>
   </table>
-  <input type="text" name="TextFilter" placeholder="*.txt;*.ini;*.css;*.js;*.vba;*.vbs" style="width: 100%">
+  <input type="text" name="TextFilter" placeholder="*.txt;*.ini;*.css;*.js;*.vba;*.vbs;*.csv;*.md;*.json;*.bat;*.py" style="width: 100%">
   <br>
   <div style="width: 33.33%; float: left">
     <label>@eudcedit.exe,-61295</label>
@@ -22,8 +22,23 @@
 </div>
 <br>
 <label>@mshtml.dll,-771[Play]</label>
-<input type="text" name="Embed" placeholder="*.mp3;*.m4a;*.webm;*.mp4;*.rm;*.ra;*.ram;*.asf;*.wma;*.wav;*.aiff;*.mpg;*.avi;*.mov;*.wmv;*.mpeg;*.swf;*.pdf" style="width: 100%">
-<br><br>
+<input type="text" name="Embed" placeholder="*.mp3;*.m4a;*.wav;*.pcm;*.oga;*.flac;*.fla;*.webm;*.mp4;*.asf;*.wav;*.aiff;*.mpg;*.avi;*.mpeg;*.ogg;*.pdf;*.html;*.htm;*.xml" style="width: 100%">
+<table>
+  <tr>
+    <td style="vertical-align: bottom"><input type="checkbox" name="Preview"></td>
+    <td><label>Preview</label></td>
+  </tr>
+  <tr>
+    <td style="vertical-align: bottom"><input type="checkbox" name="AutoPlay"></td>
+    <td><label>AutoPlay</label></td>
+    <td><label>: Required to press play button only on first playback if not muted</label></td>
+  </tr>
+  <tr>
+    <td style="vertical-align: bottom"><input type="checkbox" name="Muted"></td>
+    <td><label>Muted</label></td>
+  </tr>
+</table>
+<br>
 <table style="width: 100%">
   <tr>
     <td style="vertical-align: bottom"><input type="checkbox" name="IsExtract"></td>
@@ -33,5 +48,18 @@
 <input type="text" name="Extract" placeholder="*" style="width: 100%">
 <br><br>
 <label>General</label>
+<table>
+  <tr>
+    <td style="vertical-align: bottom"><label><input type="checkbox" name="Multiple">Multiple Previews</label></td>
+    <td><label>: Allows previewing in multiple windows. Only the last window opened is Sync</label></td>
+  </tr>
+  <tr>
+    <td style="vertical-align: bottom"><label><input type="checkbox" name="NoMouse">Mouse</label></td>
+    <td><label>: On mouse Preview</label></td>
+  </tr>
+  <tr>
+    <td style="vertical-align: bottom"><label><input type="checkbox" name="PreviewCloudFiles">Preview Cloud Files</label></td>
+    <td><label>: Except for the image. Be careful when using on-demand (Experimental)</label></td>
+  </tr>
+</table>
 <br>
-<label><input type="checkbox" name="!NoMouse">Mouse</label>

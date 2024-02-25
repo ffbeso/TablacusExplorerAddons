@@ -11,15 +11,20 @@ Sync.PreviewWindow = {
 	nPos: GetNum(item.getAttribute("MenuPos")),
 	ppid: api.Memory("DWORD"),
 	Extract: GetNum(item.getAttribute("IsExtract")) ? item.getAttribute("Extract") || "*" : "-",
-	TextFilter: GetNum(item.getAttribute("NoTextFilter")) ? "-" : item.getAttribute("TextFilter") || "*.txt;*.ini;*.css;*.js;*.vba;*.vbs",
-	Embed: item.getAttribute("Embed") || "*.mp3;*.m4a;*.webm;*.mp4;*.rm;*.ra;*.ram;*.asf;*.wma;*.wav;*.aiff;*.mpg;*.avi;*.mov;*.wmv;*.mpeg;*.swf;*.pdf",
+	TextFilter: GetNum(item.getAttribute("NoTextFilter")) ? "-" : item.getAttribute("TextFilter") || "*.txt;*.ini;*.css;*.js;*.vba;*.vbs;*.csv;*.md;*.json;*.bat;*.py;*.log",
+	Embed: item.getAttribute("Embed") || "*.mp3;*.m4a;*.wav;*.pcm;*.oga;*.flac;*.fla;*.webm;*.mp4;*.asf;*.wav;*.aiff;*.mpg;*.avi;*.mpeg;*.ogg;*.pdf;*.html;*.htm;*.xml",
 	Charset: item.getAttribute("Charset"),
 	TextSize: item.getAttribute("TextSize") || 4000,
 	TextLimit: item.getAttribute("TextLimit") || 10000000,
+	Preview: item.getAttribute("Preview") || false,
+	AutoPlay: item.getAttribute("AutoPlay") || false,
+	Muted: item.getAttribute("Muted") || false,
+	PreviewCloudFiles: item.getAttribute("PreviewCloudFiles") || false,
+	Multiple: item.getAttribute("Multiple") || false,
 
 	Exec: function (Ctrl, pt) {
 		GetFolderView(Ctrl, pt).Focus();
-		if (Sync.PreviewWindow.dlg) {
+		if (!Sync.PreviewWindow.Multiple && Sync.PreviewWindow.dlg) {
 			Sync.PreviewWindow.dlg.Document.parentWindow.CloseWindow();
 			Sync.PreviewWindow.dlg = void 0;
 		} else {
@@ -52,7 +57,7 @@ AddEvent("StatusText", function (Ctrl, Text, iPart) {
 	}
 });
 
-if (!item.getAttribute("NoMouse")) {
+if (item.getAttribute("NoMouse")) {
 	AddEvent("ToolTip", function (Ctrl, Index) {
 		if (Ctrl.Type == CTRL_SB && Index >= 0) {
 			const Item = Ctrl.Item(Index);
