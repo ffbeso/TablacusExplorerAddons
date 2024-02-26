@@ -52,11 +52,16 @@ Common.PreviewWindow = async function (hwnd, bFocus) {
 				}
 			}
 		}
+
 		if (await api.PathMatchSpec(path, await MainWindow.Sync.PreviewWindow.Embed)) {
-			ar.unshift('<input type="button" value=" &#x25B6; " title="' + (await GetTextR("@wmploc.dll,-1800")) + '" id="play1"" onclick="Addons.PreviewWindow.Play()">');
-			img1.onclick = Addons.PreviewWindow.Play;
-			img1.style.cursor = "pointer";
-			Handled = true;
+			if (!await MainWindow.Sync.PreviewWindow.Preview) {
+				ar.unshift('<input type="button" value=" &#x25B6; " title="' + (await GetTextR("@wmploc.dll,-1800")) + '" id="play1"" onclick="Addons.PreviewWindow.Play()">');
+				img1.onclick = Addons.PreviewWindow.Play;
+				img1.style.cursor = "pointer";
+				Handled = true;
+			} else {
+				Addons.PreviewWindow.Play();
+			}
 		} else {
 			img1.onclick = null;
 			img1.style.cursor = "";
@@ -230,7 +235,7 @@ Addons.PreviewWindow = {
 				option += autoplay ? "Autoplay " : "";
 				option += muted ? "Muted " : "";
 				if (window.chrome || (ui_.IEVer >= 11 && await api.PathMatchSpec(path, "*.mp4"))) {
-					div1.innerHTML = '<video controls ' + option + 'style="width: 100%; max-height: 100%"><source src="' + path + '"></video>';
+					div1.innerHTML = '<video id="Preview" controls ' + option + 'style="width: 100%; max-height: 100%"><source src="' + path + '"></video>';
 				} else {
 					div1.innerHTML = '<embed id="Preview" width="100%" height="100%" src="' + path + '"></embed>';
 				}
