@@ -88,6 +88,10 @@ if (window.Addon == 1) {
 		throttledHandle();
 	});
 
+	AddEvent("KeyMessage", function (Ctrl, hwnd, msg, key, keydata) {
+		throttledHandle();
+	});
+
 } else {
 	SetTabContents(0, "", await ReadTextFile("addons\\" + Addon_Id + "\\options.html"));
 	document.getElementById('AlphaValue').textContent = alpha;
